@@ -1,0 +1,275 @@
+Asi esta actualemnte mi reposirotio 
+
+package uce.edu.ec.repository;
+
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import jakarta.transaction.Transactional;
+import uce.edu.ec.repository.modelo.Producto;
+
+import java.util.List;
+
+@ApplicationScoped
+public class ProductoRepositoryImpl implements IProductoRepository {
+
+    @PersistenceContext
+    private EntityManager em;
+
+    @Override
+    @Transactional(Transactional.TxType.MANDATORY)
+    public void insertar(Producto producto) {
+        em.persist(producto);
+    }
+
+    @Override
+    @Transactional(Transactional.TxType.NOT_SUPPORTED)
+    public Producto selecionarPorId(Integer id) {
+        return em.find(Producto.class, id);
+    }
+
+    @Override
+    @Transactional(Transactional.TxType.NOT_SUPPORTED)
+    public Producto selecionarPorCodigoBarras(String codigoBarras) {
+        return em.createQuery("SELECT p FROM Producto p WHERE p.codigoBarras = :codigoBarras", Producto.class)
+                 .setParameter("codigoBarras", codigoBarras)
+                 .getSingleResult();
+    }
+
+    @Override
+    @Transactional(Transactional.TxType.NOT_SUPPORTED)
+    public List<Producto> selecionarTodos() {
+        return em.createQuery("SELECT p FROM Producto p", Producto.class).getResultList();
+    }
+
+    @Override
+    @Transactional(Transactional.TxType.MANDATORY)
+    public void actualizar(Producto producto) {
+        em.merge(producto);
+    }
+
+    @Override
+    @Transactional(Transactional.TxType.MANDATORY)
+    public void eliminar(Integer id) {
+        Producto producto = selecionarPorId(id);
+        if (producto != null) {
+            em.remove(producto);
+        }
+    }
+}
+
+package uce.edu.ec.repository;
+
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import jakarta.transaction.Transactional;
+import uce.edu.ec.repository.modelo.Venta;
+
+import java.util.List;
+
+@ApplicationScoped
+
+public class VentaRepositotyImpl implements IVentaRepositoty {
+
+    @PersistenceContext
+    private EntityManager em;
+
+    @Override
+    @Transactional(Transactional.TxType.MANDATORY)
+    public void insertar(Venta venta) {
+        em.persist(venta);
+    }
+
+    @Override
+    @Transactional(Transactional.TxType.NOT_SUPPORTED)
+    public Venta selecionarPorId(Integer id) {
+        return em.find(Venta.class, id);
+    }
+
+    @Override
+    @Transactional(Transactional.TxType.NOT_SUPPORTED)
+    public List<Venta> selecionarTodos() {
+        return em.createQuery("SELECT v FROM Venta v", Venta.class).getResultList();
+    }
+
+    @Override
+    @Transactional(Transactional.TxType.MANDATORY)
+    public void actualizar(Venta venta) {
+        em.merge(venta);
+    }
+
+    @Override
+    @Transactional(Transactional.TxType.MANDATORY)
+    public void eliminar(Integer id) {
+        Venta venta = selecionarPorId(id);
+        if (venta != null) {
+            em.remove(venta);
+        }
+    }
+}
+
+package uce.edu.ec.repository;
+
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import jakarta.transaction.Transactional;
+import uce.edu.ec.repository.modelo.DetalleVenta;
+
+import java.util.List;
+
+@ApplicationScoped
+
+public class DetalleVentaRepositoryImpl implements IDetalleVentaRepository {
+
+    @PersistenceContext
+    private EntityManager em;
+
+    @Override
+    @Transactional(Transactional.TxType.MANDATORY)
+    public void insertar(DetalleVenta detalleVenta) {
+        em.persist(detalleVenta);
+    }
+
+    @Override
+    @Transactional(Transactional.TxType.NOT_SUPPORTED)
+    public DetalleVenta selecionarPorId(Integer id) {
+        return em.find(DetalleVenta.class, id);
+    }
+
+    @Override
+    @Transactional(Transactional.TxType.NOT_SUPPORTED)
+    public List<DetalleVenta> selecionarTodos() {
+        return em.createQuery("SELECT d FROM DetalleVenta d", DetalleVenta.class).getResultList();
+    }
+
+    @Override
+    @Transactional(Transactional.TxType.MANDATORY)
+    public void actualziar(DetalleVenta detalleVenta) {
+        em.merge(detalleVenta);
+    }
+
+    @Override
+    @Transactional(Transactional.TxType.MANDATORY)
+    public void eliminar(Integer id) {
+        DetalleVenta detalleVenta = selecionarPorId(id);
+        if (detalleVenta != null) {
+            em.remove(detalleVenta);
+        }
+    }
+}
+
+package uce.edu.ec.repository.modelo;
+
+import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.math.BigDecimal;
+
+@Entity
+@Table(name = "detalle_venta")
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+public class DetalleVenta {
+
+    @Id
+    @SequenceGenerator(name ="sec_detalle_venta",sequenceName = "sec_detalle_venta",allocationSize = 1 )
+    @GeneratedValue(generator = "sec_detalle_venta", strategy = GenerationType.SEQUENCE)
+    @Column(name = "detalle_venta_id") 
+    private Integer id;
+
+    @Column(name = "cantidad", nullable = false)
+    private Integer cantidad;
+
+    @Column(name = "precio_unitario", nullable = false)
+    private BigDecimal precioUnitario;
+
+    @Column(name = "subtotal", nullable = false)
+    private BigDecimal subtotal;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "venta_id", nullable = false)
+    private Venta venta;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "producto_id", nullable = false)
+    private Producto producto;
+}
+
+package uce.edu.ec.repository.modelo;
+
+import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Entity
+@Table(name = "producto")
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+public class Producto {
+
+    @Id
+    @SequenceGenerator(name ="sec_producto",sequenceName = "sec_producto",allocationSize = 1 )
+    @GeneratedValue(generator = "sec_producto", strategy = GenerationType.SEQUENCE)
+    @Column(name = "prod_id") 
+    private Integer id;
+
+    @Column(name = "codigo_barras", unique = true, nullable = false)
+    private String codigoBarras;
+
+    @Column(name = "nombre", nullable = false)
+    private String nombre;
+
+    @Column(name = "categoria", nullable = false)
+    private String categoria;
+
+    @Column(name = "stock", nullable = false)
+    private Integer stock;
+
+    @Column(name = "precio", nullable = false)
+    private Double precio;
+}
+
+package uce.edu.ec.repository.modelo;
+
+import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.math.BigDecimal;
+import java.util.List;
+
+@Entity
+@Table(name = "venta")
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+public class Venta {
+
+    @Id
+    @SequenceGenerator(name ="sec_venta",sequenceName = "sec_venta",allocationSize = 1 )
+    @GeneratedValue(generator = "sec_venta", strategy = GenerationType.SEQUENCE)
+    @Column(name = "venta_id") 
+    private Integer id;
+
+    @Column(name = "numero_venta", nullable = false)
+    private String numeroVenta;
+
+    @Column(name = "cedula_cliente", nullable = false)
+    private String cedulaCliente;
+
+    @Column(name = "total_venta", nullable = false)
+    private BigDecimal totalVenta;
+
+    @OneToMany(mappedBy = "venta", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<DetalleVenta> detallesVenta;
+}
+
+como deben ser los te y la logica de negocio ahra getSingleResult
